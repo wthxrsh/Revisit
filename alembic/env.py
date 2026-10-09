@@ -32,9 +32,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+import secondbrain.database  # noqa: F401  (registers all models)
 from secondbrain.database.connection import Base
-from secondbrain.database.models import NoteModel
-from secondbrain.database.user_models import UserModel
 
 target_metadata = Base.metadata
 

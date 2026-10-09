@@ -4,22 +4,31 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secondbrain"
-version = "0.1.0"
+version = "0.2.0"
 description = "Personal knowledge management and AI system"
 requires-python = ">=3.13"
 
 dependencies = [
-    "pytest>=9.0",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.34",
     "httpx>=0.28",
     "sqlalchemy>=2.0",
     "psycopg[binary]>=3.2",
+    "pgvector>=0.3",
     "python-dotenv>=1.1",
     "alembic>=1.16",
     "pwdlib[argon2]>=0.2",
     "pydantic[email]>=2.0",
-    "PyJWT>=2.10"
+    "PyJWT>=2.10",
+    "python-multipart>=0.0.12",
+    "pypdf>=5.0",
+]
+
+[project.optional-dependencies]
+embeddings = ["fastembed>=0.4"]
+dev = [
+    "pytest>=9.0",
+    "reportlab>=4.2",
 ]
 
 [tool.setuptools.packages.find]
@@ -28,3 +37,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "integration: tests that require a running PostgreSQL database",
+]

@@ -1,14 +1,22 @@
-
 from secondbrain.models.note import Note
 from secondbrain.repositories.base import NoteRepository
 
 
 class InMemoryNoteRepository(NoteRepository):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.notes: dict[int, tuple[Note, int]] = {}
+        self._next_id = 1
+
+    def _assign_id(self) -> int:
+        note_id = self._next_id
+        self._next_id += 1
+        return note_id
 
     def save(self, note: Note, user_id: int) -> Note:
+        if note.id is None:
+            note.id = self._assign_id()
+
         self.notes[note.id] = (note, user_id)
         return note
 
@@ -65,7 +73,7 @@ class InMemoryNoteRepository(NoteRepository):
         return True
 
     def update(self, note: Note, user_id: int) -> Note | None:
-        entry = self.notes.get(note.id)
+        entry = self.notes.get(note.id)  # type: ignore[index]
 
         if entry is None:
             return None
@@ -75,5 +83,5 @@ class InMemoryNoteRepository(NoteRepository):
         if owner_id != user_id:
             return None
 
-        self.notes[note.id] = (note, user_id)
+        self.notes[note.id] = (note, user_id)  # type: ignore[index]
         return note

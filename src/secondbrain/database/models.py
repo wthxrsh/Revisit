@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
+from secondbrain.clock import utc_now
 from secondbrain.database.connection import Base
 
 
@@ -32,9 +33,12 @@ class NoteModel(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
+        default=utc_now,
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
+        default=utc_now,
+        onupdate=utc_now,
     )

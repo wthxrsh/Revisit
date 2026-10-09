@@ -1,0 +1,61 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: secondbrain
+          POSTGRES_USER: secondbrain
+          POSTGRES_PASSWORD: fsociety
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,embeddings]"
+
+      - name: Run migrations
+        env:
+          POSTGRES_DB: secondbrain
+          POSTGRES_USER: secondbrain
+          POSTGRES_PASSWORD: fsociety
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          JWT_SECRET_KEY: test-secret-key-for-ci-please-change
+        run: alembic upgrade head
+
+      - name: Run tests
+        env:
+          POSTGRES_DB: secondbrain
+          POSTGRES_USER: secondbrain
+          POSTGRES_PASSWORD: fsociety
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          JWT_SECRET_KEY: test-secret-key-for-ci-please-change
+          EMBEDDING_PROVIDER: hashing
+          LLM_PROVIDER: extractive
+          ENVIRONMENT: test
+        run: pytest -q

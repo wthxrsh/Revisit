@@ -13,6 +13,8 @@ def create_access_token(user_id: int) -> str:
     payload = {
         "sub": str(user_id),
         "exp": expires_at,
+        "iat": datetime.now(timezone.utc),
+        "type": "access",
     }
 
     return jwt.encode(
@@ -27,6 +29,18 @@ def decode_access_token(token: str) -> int:
         token,
         settings.jwt_secret_key,
         algorithms=[settings.jwt_algorithm],
+        options={
+            "require": ["exp", "sub"],
+            "verify_exp": True,
+            "verify_signature": True,
+        },
     )
 
-    return int(payload["sub"])
+    subject = payload.get("sub")
+    if not isinstance(subject, str):
+        raise jwt.InvalidTokenError("Token subject is missing or invalid")
+
+    try:
+        return int(subject)
+    except ValueError as error:
+        raise jwt.InvalidTokenError("Token subject is not a valid user id") from error

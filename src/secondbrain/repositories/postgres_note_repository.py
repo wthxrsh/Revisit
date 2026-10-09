@@ -1,9 +1,9 @@
-from sqlalchemy import select, or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from secondbrain.database.models import NoteModel
 from secondbrain.models.note import Note
 from secondbrain.repositories.base import NoteRepository
-from secondbrain.database.models import NoteModel
 
 
 class PostgresNoteRepository(NoteRepository):
@@ -13,13 +13,15 @@ class PostgresNoteRepository(NoteRepository):
 
     def save(self, note: Note, user_id: int) -> Note:
         model = NoteModel(
-            id=note.id,
             user_id=user_id,
             title=note.title,
             content=note.content,
             created_at=note.created_at,
             updated_at=note.updated_at,
         )
+
+        if note.id is not None:
+            model.id = note.id
 
         self.session.add(model)
         self.session.commit()
@@ -41,11 +43,11 @@ class PostgresNoteRepository(NoteRepository):
         return self._to_domain(model)
 
     def get_all(
-            self,
-            user_id: int,
-            limit: int = 20,
-            offset: int = 0,
-            search: str | None = None,
+        self,
+        user_id: int,
+        limit: int = 20,
+        offset: int = 0,
+        search: str | None = None,
     ) -> list[Note]:
         statement = select(NoteModel).where(
             NoteModel.user_id == user_id,
@@ -62,7 +64,7 @@ class PostgresNoteRepository(NoteRepository):
 
         statement = (
             statement
-            .order_by(NoteModel.created_at.desc())
+            .order_by(NoteModel.created_at.desc(), NoteModel.id.desc())
             .limit(limit)
             .offset(offset)
         )
@@ -70,7 +72,6 @@ class PostgresNoteRepository(NoteRepository):
         models = self.session.scalars(statement).all()
 
         return [self._to_domain(model) for model in models]
-
 
     def delete(self, note_id: int, user_id: int) -> bool:
         statement = select(NoteModel).where(

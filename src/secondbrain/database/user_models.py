@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
+from secondbrain.clock import utc_now
 from secondbrain.database.connection import Base
 
 
@@ -26,4 +27,5 @@ class UserModel(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
+        default=utc_now,
     )
